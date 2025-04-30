@@ -1,3 +1,6 @@
+import json
+import urllib
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -6,34 +9,60 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.account.models import CustomUser
 from apps.account.serializers import TelegramLoginSerializer
-from apps.account.utils.telegram_auth import verify_telegram_auth
+from apps.account.utils.telegram_auth import check_auth, TOKEN
 
 
-class TelegramLoginView(APIView):
+class TelegramAuthAPIView(APIView):
+
     def post(self, request):
-        serializer = TelegramLoginSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        data = serializer.validated_data
+        init_data_str = request.data.get("initData", "")
 
-        if not verify_telegram_auth(data.copy(), settings.TELEGRAM_BOT_TOKEN):
-            return Response({"detail": "Invalid Telegram authentication"}, status=status.HTTP_400_BAD_REQUEST)
+        if not init_data_str:
+            return Response({'error': 'initData — обязательное поле.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        tg_id = data['id']
-        user, created = CustomUser.objects.get_or_create(tg_id=tg_id, defaults={
-            'username': data.get('username', f'tg{tg_id}'),
-            'first_name': data.get('first_name', ''),
-            'last_name': data.get('last_name', ''),
-        })
+        try:
+            parsed = urllib.parse.parse_qs(init_data_str)
+            processed_data = {k: v[0] if isinstance(v, list) and len(v) == 1 else v for k, v in parsed.items()}
+            user_json = processed_data.get("user")
 
-        refresh = RefreshToken.for_user(user)
+            if not user_json:
+                return Response({'error': 'Нет информации о пользователе'}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-            'user': {
-                'id': user.id,
-                'username': user.username,
-                'first_name': user.first_name,
-                'last_name': user.last_name
-            }
-        })
+            user_data = json.loads(user_json)
+
+            if not check_auth(processed_data, TOKEN):
+                return Response({'error': 'Неправильная аутентификация Telegram'}, status=status.HTTP_403_FORBIDDEN)
+
+            telegram_id = user_data.get("id")
+            if not telegram_id:
+                return Response({'error': 'Требуется идентификатор Telegram'}, status=status.HTTP_400_BAD_REQUEST)
+
+            username = user_data.get("username", f"tg_{telegram_id}")
+            first_name = user_data.get("first_name", "")
+            last_name = user_data.get("last_name", "")
+            photo_url = user_data.get("photo_url")
+
+            # Check if user already exists
+            user = CustomUser.objects.filter(telegram_id=telegram_id).first()
+
+            # Create or update user
+            user, created = CustomUser.objects.update_or_create(
+                telegram_id=telegram_id,
+                defaults={
+                    'username': username,
+                    'first_name': first_name,
+                    'last_name': last_name,
+                    'avatar_url': photo_url,
+                }
+            )
+
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                'access_token': str(refresh.access_token),
+                'refresh_token': str(refresh),
+            }, status=status.HTTP_200_OK)
+
+        except json.JSONDecodeError:
+            return Response({'error': 'Неверный формат JSON'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': f'Ошибка сервера: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
