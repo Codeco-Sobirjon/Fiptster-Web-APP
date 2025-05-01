@@ -1,6 +1,7 @@
 import json
 import urllib
 
+from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -13,6 +14,7 @@ from apps.account.utils.telegram_auth import check_auth, TOKEN
 
 
 class TelegramAuthAPIView(APIView):
+    permission_classes = [AllowAny]
 
     def post(self, request):
         init_data_str = request.data.get("initData", "")
@@ -40,19 +42,15 @@ class TelegramAuthAPIView(APIView):
             username = user_data.get("username", f"tg_{telegram_id}")
             first_name = user_data.get("first_name", "")
             last_name = user_data.get("last_name", "")
-            photo_url = user_data.get("photo_url")
 
-            # Check if user already exists
             user = CustomUser.objects.filter(telegram_id=telegram_id).first()
 
-            # Create or update user
             user, created = CustomUser.objects.update_or_create(
                 telegram_id=telegram_id,
                 defaults={
                     'username': username,
                     'first_name': first_name,
-                    'last_name': last_name,
-                    'avatar_url': photo_url,
+                    'last_name': last_name
                 }
             )
 
