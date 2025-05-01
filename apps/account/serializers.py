@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from apps.account.models import CustomUser, UserProfile
 
@@ -18,7 +19,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
 		read_only_fields = ('id',)
 
 	def get_user_profile(self, obj):
-		user_profile = obj.profile
+		user_profile = get_object_or_404(UserProfile, user=obj)
 		if user_profile:
 			return UserProfileSerializer(user_profile, context={'request': self.context.get('request')}).data
 		return None
