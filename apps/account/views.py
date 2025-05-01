@@ -46,7 +46,7 @@ class TelegramAuthAPIView(APIView):
             user = CustomUser.objects.filter(telegram_id=telegram_id).first()
 
             user, created = CustomUser.objects.update_or_create(
-                telegram_id=telegram_id,
+                tg_id=telegram_id,
                 defaults={
                     'username': username,
                     'first_name': first_name,
