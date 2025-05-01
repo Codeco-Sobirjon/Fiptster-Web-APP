@@ -5,11 +5,9 @@ from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.conf import settings
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from apps.account.models import CustomUser
-from apps.account.serializers import TelegramLoginSerializer
+from apps.account.models import CustomUser, UserProfile
 from apps.account.utils.telegram_auth import check_auth, TOKEN
 
 
@@ -53,6 +51,8 @@ class TelegramAuthAPIView(APIView):
                     'last_name': last_name
                 }
             )
+            if created:
+                UserProfile.objects.create(user=user)
 
             refresh = RefreshToken.for_user(user)
             return Response({

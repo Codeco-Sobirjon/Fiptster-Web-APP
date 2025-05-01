@@ -1,9 +1,24 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from apps.account.models import CustomUser
+from django.utils.html import format_html
+
+from apps.account.models import CustomUser, UserProfile
 from django.utils.translation import gettext_lazy as _
 from django.utils.safestring import mark_safe
 from django.contrib.sites.models import Site
+
+
+class UserProfileInline(admin.TabularInline):
+    model = UserProfile
+    extra = 0
+    readonly_fields = ('image_preview',)
+    fields = ('profile_type', 'coin', 'coin_level', 'earn_per_tab', 'profit_per_hour', 'image_preview')
+
+    def image_preview(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" width="40" height="40" style="object-fit: cover;" />', obj.image.url)
+        return "-"
+    image_preview.short_description = "Превью"
 
 
 class CustomUserAdmin(UserAdmin):
@@ -30,6 +45,7 @@ class CustomUserAdmin(UserAdmin):
 
     search_fields = ('username', 'first_name', 'last_name', 'email')
     ordering = ('id',)
+    inlines = [UserProfileInline]
 
 
 admin.site.register(CustomUser, CustomUserAdmin)
