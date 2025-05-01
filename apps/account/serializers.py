@@ -10,9 +10,15 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
-    user_profile = UserProfileSerializer(read_only=True)
+	user_profile = serializers.SerializerMethodField()
 
-    class Meta:
-        model = CustomUser
-        fields = ('id', 'tg_id', 'username', 'first_name', 'last_name', 'email', 'avatar', 'user_profile')
-        read_only_fields = ('id',)
+	class Meta:
+		model = CustomUser
+		fields = ('id', 'tg_id', 'username', 'first_name', 'last_name', 'email', 'avatar', 'user_profile')
+		read_only_fields = ('id',)
+
+	def get_user_profile(self, obj):
+		user_profile = obj.profile
+		if user_profile:
+			return UserProfileSerializer(user_profile, context={'request': self.context.get('request')}).data
+		return None
