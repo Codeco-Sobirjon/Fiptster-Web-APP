@@ -80,6 +80,6 @@ class UserProfileAPIView(APIView):
     )
     def get(self, request, *args, **kwargs):
         user = request.user
-        user_profile = get_object_or_404(UserProfile, user=user)
-        serializer = CustomUserSerializer(user_profile, context={'request': request})
+        serializer = CustomUserSerializer(user, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
+

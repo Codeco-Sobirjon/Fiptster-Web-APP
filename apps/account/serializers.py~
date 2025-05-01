@@ -11,6 +11,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 class CustomUserSerializer(serializers.ModelSerializer):
     user_profile = UserProfileSerializer(read_only=True)
+    
 
     class Meta:
         model = CustomUser
