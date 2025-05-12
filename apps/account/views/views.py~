@@ -68,33 +68,18 @@ class TelegramAuthAPIView(APIView):
             first_name = user_data.get("first_name", "")
             last_name = user_data.get("last_name", "")
             image_url = user_data.get("photo_url", "")
-
-            defaults = {
-                'username': username,
-                'first_name': first_name,
-                'last_name': last_name,
-            }
-
-            if image_url:
-                try:
-                    response = requests.get(image_url, timeout=5)
-                    if response.status_code == 200:
-                        file_extension = image_url.split('.')[-1].lower()
-                        if file_extension not in ['jpg', 'jpeg', 'png', 'gif']:
-                            file_extension = 'jpg'
-                        file_name = f"{telegram_id}_avatar.{file_extension}"
-                        defaults['avatar'] = ContentFile(response.content, name=file_name)
-                except requests.RequestException:
-                    pass
-
+            user = CustomUser.objects.filter(tg_id=telegram_id).first()
             user, created = CustomUser.objects.update_or_create(
                 tg_id=telegram_id,
-                defaults=defaults
+                defaults={
+                    'username': username,
+                    'first_name': first_name,
+                    'last_name': last_name,
+                    'avatar': image_url,
+                }
             )
-
             if created:
                 UserProfile.objects.create(user=user)
-
             refresh = RefreshToken.for_user(user)
             return Response({
                 'access_token': str(refresh.access_token),
