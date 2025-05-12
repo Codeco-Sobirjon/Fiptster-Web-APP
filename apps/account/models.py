@@ -91,7 +91,7 @@ class UserProfile(models.Model):
     coin = models.DecimalField(max_digits=10, decimal_places=1, default=0, verbose_name=_("Монета"), null=True, blank=True)
     profile_type = models.CharField(max_length=50, choices=UserProfileType.choices,
                                      default=UserProfileType.first_choice, verbose_name=_("Тип профиля"))
-    image = models.ImageField(upload_to='user_profile/', blank=True, null=True, verbose_name=_("Изображение"))
+    image = models.URLField(blank=True, null=True, verbose_name=_("Изображение"))
     created_at = models.DateField(auto_now_add=True, verbose_name=_("Дата создания"))
 
     objects = models.Manager()
