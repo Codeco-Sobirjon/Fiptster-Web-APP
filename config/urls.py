@@ -35,6 +35,8 @@ urlpatterns += [
 
 urlpatterns += [
     path('api/v1/account/', include('apps.account.urls')),
+    path('api/v1/market/', include('apps.market.urls')),
+    path('api/v1/feeds/', include('apps.feeds.urls')),
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

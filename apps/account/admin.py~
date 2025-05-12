@@ -67,11 +67,6 @@ admin.site.site_title = _("Fiptster Панель управления.")
 admin.site.index_title = _("Добро пожаловать в админку Fiptster.")
 
 admin.site.unregister(Site)
-admin.site.unregister(PeriodicTask)
-admin.site.unregister(IntervalSchedule)
-admin.site.unregister(CrontabSchedule)
-admin.site.unregister(ClockedSchedule)
-admin.site.unregister(SolarSchedule)
 
 admin.site.register(UserProfile)
 

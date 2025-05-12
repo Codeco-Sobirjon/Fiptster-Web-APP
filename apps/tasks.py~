@@ -1,0 +1,59 @@
+from celery import shared_task
+from apps.account.models import UserProfile
+from decimal import Decimal
+
+@shared_task
+def update_user_profiles_based_on_coins():
+    profiles = UserProfile.objects.select_related('user').all()
+
+    for profile in profiles:
+        coin = profile.coin or Decimal('0')
+
+        if coin < 5000:
+            print(1)
+            level = UserProfile.CoinLevel.first_choice
+            ptype = UserProfile.UserProfileType.first_choice
+        elif coin < 25000:
+            print(2)
+            level = UserProfile.CoinLevel.second_choice
+            ptype = UserProfile.UserProfileType.second_choice
+        elif coin < 100000:
+            print(3)
+            level = UserProfile.CoinLevel.third_choice
+            ptype = UserProfile.UserProfileType.third_choice
+        elif coin < 1000000:
+            print(4)
+            level = UserProfile.CoinLevel.fourth_choice
+            ptype = UserProfile.UserProfileType.fourth_choice
+        elif coin < 2000000:
+            print(5)
+            level = UserProfile.CoinLevel.fifth_choice
+            ptype = UserProfile.UserProfileType.fifth_choice
+        elif coin < 10000000:
+            print(6)
+            level = UserProfile.CoinLevel.sixth_choice
+            ptype = UserProfile.UserProfileType.sixth_choice
+        elif coin < 50000000:
+            print(7)
+            level = UserProfile.CoinLevel.seventh_choice
+            ptype = UserProfile.UserProfileType.seventh_choice
+        elif coin < 100000000:
+            print(8)
+            level = UserProfile.CoinLevel.eighth_choice
+            ptype = UserProfile.UserProfileType.eighth_choice
+        elif coin < 12000000000:
+            print(9)
+            level = UserProfile.CoinLevel.ninth_choice
+            ptype = UserProfile.UserProfileType.ninth_choice
+        elif coin < 18000000000:
+            level = UserProfile.CoinLevel.tenth_choice
+            ptype = UserProfile.UserProfileType.tenth_choice
+        else:
+            print(10)
+            level = UserProfile.CoinLevel.eleventh_choice
+            ptype = UserProfile.UserProfileType.eleventh_choice
+
+        profile.coin_level = level
+        profile.profile_type = ptype
+        profile.image.name = f"profile_type/{UserProfile.PROFILE_TYPE_TO_IMAGE[ptype]}"
+        profile.save()

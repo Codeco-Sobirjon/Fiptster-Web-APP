@@ -1,7 +1,9 @@
 import os
-
+import uuid
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, Group, Permission
 from django.db import models
+from django.utils import timezone
+
 from apps.account.managers.custom_user import CustomUserManager
 from django.utils.translation import gettext as _
 from django.conf import settings
@@ -14,6 +16,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=30, verbose_name="Имя", null=True, blank=True)
     last_name = models.CharField(max_length=30, verbose_name="Фамилия", null=True, blank=True)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, verbose_name=_("Аватар"))
+    invited = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True,
+                                 related_name='invited_users', verbose_name=_("Пригласил"))
     is_active = models.BooleanField(default=True, verbose_name="Активен")
     is_staff = models.BooleanField(default=False, verbose_name="Персонал")
 
@@ -63,6 +67,20 @@ class UserProfile(models.Model):
         UserProfileType.eleventh_choice: 'eleventh.png',
     }
 
+    class CoinLevel(models.TextChoices):
+        first_choice = '1000', _('1K')
+        second_choice = '5000', _('5K')
+        third_choice = '25000', _('25K')
+        fourth_choice = '100000', _('100K')
+        fifth_choice = '1000000', _('1M')
+        sixth_choice = '2000000', _('2M')
+        seventh_choice = '10000000', _('10M')
+        eighth_choice = '5000000', _('50M')
+        ninth_choice = '100000000', _('100M')
+        tenth_choice = '12000000000', _('1.2B')
+        eleventh_choice = '18000000000', _('18B+')
+
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4(), editable=False, verbose_name=_("UUID"))
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile',
                              verbose_name=_("Пользователь"), null=True, blank=True)
     earn_per_tab = models.PositiveIntegerField(default=0, verbose_name=_("Заработок за вкладку"),
@@ -74,6 +92,7 @@ class UserProfile(models.Model):
     profile_type = models.CharField(max_length=50, choices=UserProfileType.choices,
                                      default=UserProfileType.first_choice, verbose_name=_("Тип профиля"))
     image = models.ImageField(upload_to='user_profile/', blank=True, null=True, verbose_name=_("Изображение"))
+    created_at = models.DateField(auto_now_add=True, verbose_name=_("Дата создания"))
 
     objects = models.Manager()
 
@@ -82,8 +101,8 @@ class UserProfile(models.Model):
             image_name = self.PROFILE_TYPE_TO_IMAGE.get(self.profile_type, 'first.png')
             image_path = os.path.join('profile_type', image_name)
             self.image.name = image_path
-            self.coin_level = 5000
-            self.earn_per_tab = 3
+            self.coin_level = self.CoinLevel.first_choice
+            self.earn_per_tab = 12
             self.profit_per_hour = 0.5
         super().save(*args, **kwargs)
 
@@ -99,3 +118,52 @@ class UserProfile(models.Model):
     class Meta:
         verbose_name = "Профиль пользователя"
         verbose_name_plural = "Профили пользователей"
+
+
+class ChannelsUser(models.Model):
+
+    class TaskType(models.TextChoices):
+        first_choice = 'FIPT Youtube', _('FIPT Youtube')
+        second_choice = 'Task List', _('Task List')
+
+    class ChannelType(models.TextChoices):
+        first_choice = 'Youtube', _('Youtube')
+        second_choice = 'Telegram', _('Telegram')
+        fourth_choice = 'Twitter', _('Twitter')
+        fifth_choice = 'Instagram', _('Instagram')
+        sixth_choice = 'Facebook', _('Facebook')
+
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name=_("UUID"))
+    channel_name = models.CharField(max_length=255, verbose_name=_("Имя канала"), null=True, blank=True)
+    channel_coin = models.CharField(max_length=255, verbose_name=_("Канал монет"), null=True, blank=True)
+    channel_link = models.CharField(max_length=255, verbose_name=_("URL канала"), null=True, blank=True)
+    secret_code = models.CharField(max_length=255, verbose_name=_("Секретный код"), null=True, blank=True)
+    task_type = models.CharField(max_length=50, choices=TaskType.choices, default=TaskType.first_choice,
+                                 verbose_name=_("Тип задачи"))
+    channel_type = models.CharField(max_length=50, choices=ChannelType.choices, default=ChannelType.first_choice,
+                                     verbose_name=_("Тип канала"))
+    created_at = models.DateField(auto_now_add=True, verbose_name=_("Дата создания"))
+
+    objects = models.Manager()
+
+    class Meta:
+        verbose_name = "Каналы пользователя"
+        verbose_name_plural = "Каналы пользователей"
+
+
+class ConnectToChannel(models.Model):
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name=_("UUID"))
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='connect_user',
+                             verbose_name=_("Пользователь"), null=True, blank=True)
+    channel = models.ForeignKey(ChannelsUser, on_delete=models.CASCADE, related_name='connect_channel',
+                                 verbose_name=_("Канал"), null=True, blank=True)
+    created_at = models.DateField(auto_now_add=True, verbose_name=_("Дата создания"))
+
+    objects = models.Manager()
+
+    def __str__(self):
+        return f"Подключение {self.user.username} к каналу {self.channel.channel_name}"
+
+    class Meta:
+        verbose_name = "Подключение к каналу"
+        verbose_name_plural = "Подключения к каналам"
