@@ -30,8 +30,8 @@ class FeedCommentLikeInline(admin.TabularInline):
 
 @admin.register(Feed)
 class FeedAdmin(admin.ModelAdmin):
-	list_display = ('uuid', 'name', 'category', 'created_at')
-	list_filter = ('category', 'created_at')
+	list_display = ('uuid', 'name', 'category', 'type', 'created_at')
+	list_filter = ('category', 'type')
 	search_fields = ('name', 'description')
 	inlines = [FeedLikeInline, FeedCommentInline]
 

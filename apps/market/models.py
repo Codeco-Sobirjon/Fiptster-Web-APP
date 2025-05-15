@@ -56,7 +56,9 @@ class Order(models.Model):
 		sixth_choice = 'XXL', 'XXL'
 
 	uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, verbose_name='UUID')
-	user = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE, related_name='orders', verbose_name='Пользователь')
+	user = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE, related_name='orders',
+	                         verbose_name='Пользователь',
+	                         null=True, blank=True)
 	market = models.ForeignKey(Market, on_delete=models.CASCADE, related_name='orders', verbose_name='Товар')
 	sizes = MultiSelectField(choices=SizeType.choices, verbose_name='Размеры')
 	full_name = models.CharField(max_length=255, verbose_name='ФИО')

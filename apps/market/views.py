@@ -12,7 +12,7 @@ from rest_framework import status
 from apps.market.filters import MarketFilter
 from apps.market.models import Market, Order, Category
 from apps.market.pagination import CustomPagination
-from apps.market.serializers import CategorySerializer, MarketSerializer, MarketDetailSerializer
+from apps.market.serializers import CategorySerializer, MarketSerializer, MarketDetailSerializer, CreateOrderSerializer
 
 
 class CategoryAPIView(APIView):
@@ -44,7 +44,8 @@ class MarketAPIView(APIView):
 		manual_parameters=[
 			openapi.Parameter('name', openapi.IN_QUERY, description="Filter by market name (case-insensitive)",
 			                  type=openapi.TYPE_STRING),
-			openapi.Parameter('category', openapi.IN_QUERY, description="Filter by category UUID", type=openapi.TYPE_STRING),
+			openapi.Parameter('category', openapi.IN_QUERY, description="Filter by category UUID",
+			                  type=openapi.TYPE_STRING),
 			openapi.Parameter('price_fiptp', openapi.IN_QUERY, description="Filter by price_fiptp",
 			                  type=openapi.TYPE_NUMBER),
 			openapi.Parameter('page', openapi.IN_QUERY, description="Page number", type=openapi.TYPE_INTEGER),
@@ -97,3 +98,47 @@ class MarketDetailAPIView(APIView):
 			return Response(serializer.data, status=status.HTTP_200_OK)
 		except ValueError:
 			return Response({"error": "Invalid UUID format"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CreateOrderView(APIView):
+	permission_classes = [IsAuthenticated]
+
+	@swagger_auto_schema(
+		tags=['Market'],
+		request_body=openapi.Schema(
+			type=openapi.TYPE_OBJECT,
+			properties={
+				'market': openapi.Schema(type=openapi.TYPE_STRING, format='uuid', example="12345678-1234-5678-1234-567812345678"),
+				'full_name': openapi.Schema(type=openapi.TYPE_STRING, example="Иван Иванов"),
+				'email': openapi.Schema(type=openapi.TYPE_STRING, example="ivanov@example.com"),
+				'address': openapi.Schema(type=openapi.TYPE_STRING, example="Москва, улица Пушкина, дом 1"),
+				'city': openapi.Schema(type=openapi.TYPE_STRING, example="Москва"),
+				'country': openapi.Schema(type=openapi.TYPE_STRING, example="Россия"),
+				'zip_code': openapi.Schema(type=openapi.TYPE_STRING, example="101000"),
+				'sizes': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Items(type=openapi.TYPE_STRING),
+				                        example=["M", "L"]),
+				'is_shipping': openapi.Schema(type=openapi.TYPE_BOOLEAN, example=True),
+			},
+			required=['full_name', 'email', 'address', 'city', 'country', 'zip_code', 'sizes', 'is_shipping']
+		),
+		responses={
+			201: CreateOrderSerializer(),
+			400: openapi.Response(
+				description="Ошибка валидации",
+				schema=openapi.Schema(
+					type=openapi.TYPE_OBJECT,
+					properties={
+						'detail': openapi.Schema(type=openapi.TYPE_STRING, description="Ошибка")
+					}
+				),
+			),
+		},
+		operation_description="Создание нового заказа. Используйте UUID товара для создания заказа.",
+		operation_summary="Создать заказ"
+	)
+	def post(self, request, *args, **kwargs):
+		serializer = CreateOrderSerializer(data=request.data, context={'request': request})
+		if serializer.is_valid():
+			order = serializer.save()
+			return Response(CreateOrderSerializer(order).data, status=status.HTTP_201_CREATED)
+		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

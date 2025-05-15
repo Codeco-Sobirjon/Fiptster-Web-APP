@@ -11,6 +11,8 @@ class FeedCategory(models.Model):
 	name = models.CharField(max_length=255, verbose_name='Название')
 	created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
 
+	objects = models.Manager()
+
 	class Meta:
 		verbose_name = 'Категория'
 		verbose_name_plural = 'Категории'
@@ -20,13 +22,21 @@ class FeedCategory(models.Model):
 
 
 class Feed(models.Model):
+
+	class VideoType(models.TextChoices):
+		REELS = 'reels', 'Reels'
+		ADVERTISEMENT = 'advertisement', 'Advertisement'
+
 	uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, verbose_name='UUID')
 	name = models.CharField(max_length=255, verbose_name='Название', null=True, blank=True)
 	description = models.TextField(verbose_name='Описание', null=True, blank=True)
 	video_file = models.FileField(upload_to='videos/', verbose_name='Видео файл', null=True, blank=True)
 	thumbnail = models.ImageField(upload_to='thumbnails/', blank=True, null=True, verbose_name='Миниатюра')
+	type = models.CharField(max_length=255, choices=VideoType.choices, default=VideoType.REELS, verbose_name='Тип')
 	category = models.ForeignKey(FeedCategory, on_delete=models.CASCADE, related_name='feeds', verbose_name='Категория')
 	created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
+
+	objects = models.Manager()
 
 	class Meta:
 		verbose_name = 'Лента'
@@ -41,6 +51,8 @@ class FeedLike(models.Model):
 	user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='feed_likes', verbose_name='Пользователь')
 	feed = models.ForeignKey(Feed, on_delete=models.CASCADE, related_name='likes', verbose_name='Лента')
 	created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
+
+	objects = models.Manager()
 
 	class Meta:
 		verbose_name = 'Лайк'
@@ -57,6 +69,8 @@ class FeedComment(models.Model):
 	text = models.TextField(verbose_name='Текст')
 	created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
 
+	objects = models.Manager()
+
 	class Meta:
 		verbose_name = 'Комментарии'
 		verbose_name_plural = 'Комментарии'
@@ -70,6 +84,8 @@ class FeedCommentLike(models.Model):
 	user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='feed_comment_likes', verbose_name='Пользователь')
 	feed_comment = models.ForeignKey(FeedComment, on_delete=models.CASCADE, related_name='likes', verbose_name='Комментарии')
 	created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
+
+	objects = models.Manager()
 
 	class Meta:
 		verbose_name = 'Лайк'

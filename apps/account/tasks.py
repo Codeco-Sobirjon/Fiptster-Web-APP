@@ -12,38 +12,50 @@ def update_user_profiles_based_on_coins():
         if coin < 5000:
             level = UserProfile.CoinLevel.first_choice
             ptype = UserProfile.UserProfileType.first_choice
+            ern_per_tab = 12
         elif coin < 25000:
             level = UserProfile.CoinLevel.second_choice
             ptype = UserProfile.UserProfileType.second_choice
+            ern_per_tab = 24
         elif coin < 100000:
             level = UserProfile.CoinLevel.third_choice
             ptype = UserProfile.UserProfileType.third_choice
+            ern_per_tab = 36
         elif coin < 1000000:
             level = UserProfile.CoinLevel.fourth_choice
             ptype = UserProfile.UserProfileType.fourth_choice
+            ern_per_tab = 48
         elif coin < 2000000:
             level = UserProfile.CoinLevel.fifth_choice
             ptype = UserProfile.UserProfileType.fifth_choice
+            ern_per_tab = 60
         elif coin < 10000000:
             level = UserProfile.CoinLevel.sixth_choice
             ptype = UserProfile.UserProfileType.sixth_choice
+            ern_per_tab = 72
         elif coin < 50000000:
             level = UserProfile.CoinLevel.seventh_choice
             ptype = UserProfile.UserProfileType.seventh_choice
+            ern_per_tab = 84
         elif coin < 100000000:
             level = UserProfile.CoinLevel.eighth_choice
             ptype = UserProfile.UserProfileType.eighth_choice
+            ern_per_tab = 96
         elif coin < 12000000000:
             level = UserProfile.CoinLevel.ninth_choice
             ptype = UserProfile.UserProfileType.ninth_choice
+            ern_per_tab = 108
         elif coin < 18000000000:
             level = UserProfile.CoinLevel.tenth_choice
             ptype = UserProfile.UserProfileType.tenth_choice
+            ern_per_tab = 120
         else:
             level = UserProfile.CoinLevel.eleventh_choice
             ptype = UserProfile.UserProfileType.eleventh_choice
+            ern_per_tab = 132
 
         profile.coin_level = level
         profile.profile_type = ptype
+        profile.earn_per_tab = ern_per_tab
         profile.image.name = f"profile_type/{UserProfile.PROFILE_TYPE_TO_IMAGE[ptype]}"
         profile.save()

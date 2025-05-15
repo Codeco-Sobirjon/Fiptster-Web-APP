@@ -10,8 +10,9 @@ from apps.account.serializers.connection_channels_serializers import (
 	ChannelsUserSerializer,
 	GroupedByTaskTypeSerializer,
 	ChannelsUserGroupedSerializer,
+    UserProfileDetailSerializer
 )
-from apps.account.models import ChannelsUser, ConnectToChannel, UserProfile
+from apps.account.models import ChannelsUser, ConnectToChannel, UserProfile, CustomUser
 
 
 class ChannelsUserAPIView(APIView):
@@ -77,3 +78,62 @@ class ChannelsUserCheckViews(APIView):
 
         except ObjectDoesNotExist:
             return Response({"exists": False}, status=status.HTTP_404_NOT_FOUND)
+
+
+class ModifiedProfitPerTabView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        tags=['Account'],
+        operation_summary="Increment user's profit_per_hour",
+        operation_description="This endpoint increments the authenticated user's "
+                              "`profit_per_hour` by 1 and saves the updated value.",
+        responses={
+            200: openapi.Response(
+                description="Successfully modified",
+                examples={
+                    "application/json": {
+                        "msg": "Successfully modified"
+                    }
+                }
+            ),
+            401: openapi.Response(description="Authentication credentials were not provided or invalid"),
+            404: openapi.Response(description="User profile not found")
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        profile_profit_per_hour_increment = UserProfile.objects.select_related('user').filter(user=user).first()
+        profile_profit_per_hour_increment.profit_per_hour += 1
+        profile_profit_per_hour_increment.save()
+        return Response({"msg": "Successfully modified"}, status=status.HTTP_200_OK)
+
+
+class UserProfileTypeDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        tags=['Account'],
+        operation_summary="Retrieve the profile type of the authenticated user",
+        responses={
+            200: openapi.Response(
+                description='User profile type retrieved successfully',
+                examples={
+                    "application/json": {
+                        "profile_type": "some_profile_type"
+                    }
+                }
+            ),
+            401: openapi.Response(description="Authentication credentials were not provided or invalid")
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        types = kwargs.get('type')
+        get_users_list = CustomUser.objects.filter(profile__profile_type=types)
+        type_list = []
+        
+
+        profile = UserProfile.objects.get(uuid=kwargs.get('uuid'))
+        serializer = UserProfileDetailSerializer(profile, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
