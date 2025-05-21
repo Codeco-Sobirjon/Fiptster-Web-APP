@@ -10,6 +10,7 @@ from apps.account.serializers.connection_channels_serializers import (
 	ChannelsUserSerializer,
 	GroupedByTaskTypeSerializer,
 	ChannelsUserGroupedSerializer,
+    UserProfileDetailSerializer
 )
 from apps.account.models import ChannelsUser, ConnectToChannel, UserProfile, CustomUser
 

@@ -1,6 +1,13 @@
 import json
+import os
 import urllib
+import uuid
+from collections import defaultdict
+from urllib.parse import urljoin
+
 import requests
+from django.conf import settings
+from django.shortcuts import get_object_or_404
 
 from django.core.files.base import ContentFile
 from drf_yasg import openapi
@@ -12,7 +19,8 @@ from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.account.models import CustomUser, UserProfile
-from apps.account.serializers.serializers import CustomUserSerializer, CustomAuthTokenSerializer
+from apps.account.serializers.serializers import CustomUserSerializer, CustomAuthTokenSerializer, \
+    UserProfileSerializer, ProfileTypeSerializer
 from apps.account.utils.telegram_auth import check_auth, TOKEN
 
 
@@ -50,6 +58,7 @@ class TelegramAuthAPIView(APIView):
     )
     def post(self, request):
         init_data_str = request.data.get("initData", "")
+        referal_code = request.data.get("referal_code", None)
         if not init_data_str:
             return Response({'error': 'initData — обязательное поле.'}, status=status.HTTP_400_BAD_REQUEST)
         try:
@@ -172,3 +181,111 @@ class CustomAuthTokenView(APIView):
             }, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+class UserProfileListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        base_url = request.build_absolute_uri('/')
+
+        profiles = UserProfile.objects.select_related('user').all()
+
+        profile_type_data = {}
+        for profile in profiles:
+            profile_type = profile.profile_type
+            if profile_type not in profile_type_data:
+                image_url = (
+                    urljoin(base_url, profile.image.url)
+                    if profile.image and hasattr(profile.image, 'url')
+                    else None
+                )
+
+                profile_type_data[profile_type] = {
+                    'name': profile_type,
+                    'image': image_url,
+                    'coin_level': profile.coin_level,
+                    'users': []
+                }
+            if profile.user:
+                profile_type_data[profile_type]['users'].append(profile.user)
+
+        result = []
+        for profile_type, _ in UserProfile.UserProfileType.choices:
+            if profile_type in profile_type_data:
+                data = profile_type_data[profile_type]
+                sorted_users = sorted(
+                    data['users'],
+                    key=lambda user: user.profile.first().coin if user.profile.exists() else 0
+                )
+                data['users_data'] = sorted_users
+                del data['users']
+            else:
+                image_name = UserProfile.PROFILE_TYPE_TO_IMAGE.get(profile_type, 'first.png')
+                image_path = os.path.join(settings.MEDIA_URL, 'profile_type', image_name)
+                image_url = urljoin(base_url, image_path)
+                data = {
+                    'name': profile_type,
+                    'image': image_url,
+                    'coin_level': UserProfile.CoinLevel.first_choice,
+                    'users_data': []
+                }
+            result.append(data)
+
+        serializer = ProfileTypeSerializer(result, many=True, context={'request': request})
+        return Response(serializer.data)
+
+
+class UserCoinUpdatedView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        tags=['Account'],
+        operation_description="Update the user's coin balance",
+        responses={
+            200: openapi.Response(
+                description='Coin balance updated successfully',
+                schema=UserProfileSerializer,
+                examples={
+                    'application/json': {
+                        'coin': 100,
+                        'earn_per_tab': 12,
+                        'profit_per_hour': 0.5,
+                        'profile_type': 'FIPT Youtube',
+                        'image': 'https://example.com/image.jpg'
+                    }
+                }
+            ),
+            400: openapi.Response(
+                description='Bad request',
+                examples={
+                    'application/json': {
+                        'error': 'coin_point is required.'
+                    }
+                }
+            ),
+            404: openapi.Response(
+                description='User profile not found',
+                examples={
+                    'application/json': {
+                        'error': 'User profile not found'
+                    }
+                }
+            )
+        }
+    )
+    def patch(self, request, *args, **kwargs):
+        user = request.user
+
+        coin_point = request.data.get('coin_point')
+
+        if coin_point is None:
+            return Response({"error": "coin_point is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user_profile = get_object_or_404(UserProfile, user=user)
+
+        user_profile.coin = user_profile.coin + (user_profile.earn_per_tab * coin_point)
+        user_profile.save()
+
+        serializer = UserProfileSerializer(user_profile, context={'request': request})
+
+        return Response(serializer.data, status=status.HTTP_200_OK)

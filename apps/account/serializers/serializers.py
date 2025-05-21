@@ -1,11 +1,16 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
+from django.db.models import Window, F
+from django.db.models.functions import DenseRank as DenseRankFunc
+from rest_framework.exceptions import AuthenticationFailed
+
 from apps.account.models import CustomUser, UserProfile
-from rest_framework.exceptions import AuthenticationFailed, ValidationError
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(use_url=True, allow_null=True)
+
     class Meta:
         model = UserProfile
         fields = ('uuid', 'profile_type', 'coin', 'coin_level', 'earn_per_tab', 'profit_per_hour', 'image')
@@ -13,16 +18,36 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 class CustomUserSerializer(serializers.ModelSerializer):
     user_profile = serializers.SerializerMethodField()
+    user_rank = serializers.SerializerMethodField()
 
     class Meta:
         model = CustomUser
-        fields = ('id', 'tg_id', 'username', 'first_name', 'last_name', 'email', 'avatar', 'user_profile')
+        fields = ('id', 'tg_id', 'username', 'first_name', 'last_name', 'email', 'avatar', 'user_profile', 'user_rank')
 
     def get_user_profile(self, obj):
         user_profile = get_object_or_404(UserProfile, user=obj)
         if user_profile:
             return UserProfileSerializer(user_profile, context={'request': self.context.get('request')}).data
         return None
+
+    def get_user_rank(self, obj):
+        user_profile = UserProfile.objects.filter(user=obj).first()
+        if not user_profile:
+            return None
+
+        profile_type = user_profile.profile_type
+        user_coin = user_profile.coin
+
+        rank_query = UserProfile.objects.filter(
+            profile_type=profile_type
+        ).annotate(
+            rank=Window(
+                expression=DenseRankFunc(),
+                order_by=F('coin').desc()
+            )
+        ).filter(user=obj).values('rank').first()
+
+        return rank_query['rank'] if rank_query else None
 
 
 class CustomAuthTokenSerializer(serializers.Serializer):
@@ -54,3 +79,9 @@ class CustomAuthTokenSerializer(serializers.Serializer):
             'user': user,
         }
 
+
+class ProfileTypeSerializer(serializers.Serializer):
+    name = serializers.CharField()
+    image = serializers.CharField(allow_null=True)
+    coin_level = serializers.CharField()
+    users_data = CustomUserSerializer(many=True)

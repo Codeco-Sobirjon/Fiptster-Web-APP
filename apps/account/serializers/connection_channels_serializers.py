@@ -47,19 +47,4 @@ class ChannelsUserGroupedSerializer(serializers.Serializer):
         list_serializer_class = GroupedByTaskTypeSerializer
 
 
-class UserProfileDetailSerializer(serializers.ModelSerializer):
-
-    users_list = serializers.SerializerMethodField()
-
-    class Meta:
-        model = UserProfile
-        fields = ['uuid', 'coin_level', 'profile_type', 'users_list', 'image']
-        read_only_fields = ['uuid', 'created_at']
-
-    def get_users_list(self, obj):
-        users_data = CustomUser.objects.filter(
-            profile=obj
-        ).order_by('-profile__coin')
-        serializer = CustomUserSerializer(users_data, many=True, context={'request': self.context.get('request')})
-        return serializer.data
 

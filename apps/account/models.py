@@ -52,7 +52,7 @@ class UserProfile(models.Model):
         ninth_choice = 'Adult Insider', _('Adult Insider')
         tenth_choice = 'Exclusive Pleasure-Seeker', _('Exclusive Pleasure-Seeker')
         eleventh_choice = 'FIPT Legend', _('FIPT Legend')
-
+    
     PROFILE_TYPE_TO_IMAGE = {
         UserProfileType.first_choice: 'first.png',
         UserProfileType.second_choice: 'second.png',
