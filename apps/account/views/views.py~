@@ -241,13 +241,6 @@ class UserCoinUpdatedView(APIView):
     @swagger_auto_schema(
         tags=['Account'],
         operation_description="Update the user's coin balance",
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            required=['coin_point'],
-            properties={
-                'coin_point': openapi.Schema(type=openapi.TYPE_INTEGER, description='Number of coin points to add')
-            }
-        ),
         responses={
             200: openapi.Response(
                 description='Coin balance updated successfully',
