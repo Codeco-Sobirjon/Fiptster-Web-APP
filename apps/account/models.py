@@ -168,3 +168,21 @@ class ConnectToChannel(models.Model):
     class Meta:
         verbose_name = "Подключение к каналу"
         verbose_name_plural = "Подключения к каналам"
+
+
+class Referals(models.Model):
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name=_("UUID"))
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='referral_user',
+                             verbose_name=_("Пользователь"), null=True, blank=True)
+    invited_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='invited_user',
+                                     verbose_name=_("Пригласил"), null=True, blank=True)
+    created_at = models.DateField(auto_now_add=True, verbose_name=_("Дата создания"))
+
+    objects = models.Manager()
+
+    class Meta:
+        verbose_name = "Реферал"
+        verbose_name_plural = "Рефералы"
+
+    def __str__(self):
+        return f"Реферал {self.user.username} пригласил {self.invited_user.username if self.invited_user else 'неизвестного'}"

@@ -3,10 +3,17 @@ from django.contrib.auth.admin import UserAdmin
 from django.utils.html import format_html
 from django_celery_beat.models import PeriodicTask, IntervalSchedule, CrontabSchedule, ClockedSchedule, SolarSchedule
 
-from apps.account.models import CustomUser, UserProfile, ChannelsUser, ConnectToChannel
+from apps.account.models import CustomUser, UserProfile, ChannelsUser, ConnectToChannel, Referals
 from django.utils.translation import gettext_lazy as _
 from django.utils.safestring import mark_safe
 from django.contrib.sites.models import Site
+
+
+class ReferalsInline(admin.TabularInline):
+    model = Referals
+    fk_name = 'invited_user'
+    extra = 0
+    fields = ("invited_user", "created_at")
 
 
 class ConnectToChannelInline(admin.TabularInline):
@@ -57,7 +64,7 @@ class CustomUserAdmin(UserAdmin):
     )
 
     search_fields = ('username', 'first_name', 'last_name', 'email')
-    inlines = [UserProfileInline, ConnectToChannelInline]
+    inlines = [UserProfileInline, ConnectToChannelInline, ReferalsInline]
 
 
 admin.site.register(CustomUser, CustomUserAdmin)

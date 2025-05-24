@@ -7,6 +7,7 @@ from urllib.parse import urljoin
 
 import requests
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 
 from django.core.files.base import ContentFile
@@ -18,7 +19,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from apps.account.models import CustomUser, UserProfile
+from apps.account.models import CustomUser, UserProfile, Referals
 from apps.account.serializers.serializers import CustomUserSerializer, CustomAuthTokenSerializer, \
     UserProfileSerializer, ProfileTypeSerializer, ProfileSoundSerializer
 from apps.account.utils.telegram_auth import check_auth, TOKEN
@@ -35,6 +36,7 @@ class TelegramAuthAPIView(APIView):
             required=['initData'],
             properties={
                 'initData': openapi.Schema(type=openapi.TYPE_STRING, description='Telegram authentication initData string'),
+                'referal_code': openapi.Schema(type=openapi.FORMAT_UUID, description='Optional referral code')
             },
         ),
         responses={
@@ -100,6 +102,16 @@ class TelegramAuthAPIView(APIView):
                 tg_id=telegram_id,
                 defaults=defaults
             )
+
+            if referal_code:
+                try:
+                    inviter = get_object_or_404(CustomUser, uuid=referal_code)
+                    Referals.objects.create(
+                        user=user,
+                        invited_user=inviter
+                    )
+                except ObjectDoesNotExist:
+                    return Response({'error': 'Неверный реферальный код'}, status=status.HTTP_400_BAD_REQUEST)
 
             if created:
                 UserProfile.objects.create(user=user)
@@ -185,6 +197,35 @@ class CustomAuthTokenView(APIView):
 class UserProfileListView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(
+        tags=['Account'],
+        operation_description="Retrieve a list of user profiles",
+        responses={
+            200: openapi.Response(
+                description='User profiles retrieved successfully',
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'profiles': openapi.Schema(
+                            type=openapi.TYPE_ARRAY,
+                            items=openapi.Schema(
+                                type=openapi.TYPE_OBJECT,
+                                properties={
+                                    'name': openapi.Schema(type=openapi.TYPE_STRING, description='Profile name'),
+                                    'image': openapi.Schema(type=openapi.TYPE_STRING, description='Profile image URL'),
+                                    'coin_level': openapi.Schema(type=openapi.TYPE_INTEGER, description='Coin level'),
+                                    'users': openapi.Schema(
+                                        type=openapi.TYPE_ARRAY,
+                                        items=CustomUserSerializer(),
+                                    ),
+                                }
+                            )
+                        )
+                    }
+                )
+            )
+        }
+    )
     def get(self, request):
         base_url = request.build_absolute_uri('/')
 
