@@ -2,7 +2,7 @@ from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from apps.account.views.views import (TelegramAuthAPIView, UserProfileAPIView, CustomAuthTokenView, UserProfileListView,
-                                      UserCoinUpdatedView,)
+                                      UserCoinUpdatedView, ProfileSoundView)
 from apps.account.views.connection_channels_views import (
 	ChannelsUserAPIView,
 	ChannelsUserCheckViews,
@@ -23,5 +23,6 @@ urlpatterns = [
 	path('profile/grouped/', UserProfileListView.as_view(), name='user-profile-grouped'),
 
 	path('profile/coin_updated/', UserCoinUpdatedView.as_view(), name='user-coin-updated'),
+	path('profile/sound/', ProfileSoundView.as_view(), name='profile-sound'),
 ]
 

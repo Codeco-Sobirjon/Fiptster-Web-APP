@@ -20,7 +20,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.account.models import CustomUser, UserProfile
 from apps.account.serializers.serializers import CustomUserSerializer, CustomAuthTokenSerializer, \
-    UserProfileSerializer, ProfileTypeSerializer
+    UserProfileSerializer, ProfileTypeSerializer, ProfileSoundSerializer
 from apps.account.utils.telegram_auth import check_auth, TOKEN
 
 
@@ -289,3 +289,31 @@ class UserCoinUpdatedView(APIView):
         serializer = UserProfileSerializer(user_profile, context={'request': request})
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ProfileSoundView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        tags=['Account'],
+        operation_description="Update the user's profile sound",
+        request_body=ProfileSoundSerializer,
+        responses={
+            200: openapi.Response(
+                description='Profile sound updated successfully',
+                schema=CustomUserSerializer,
+            ),
+            400: "Bad Request",
+        }
+    )
+    def patch(self, request, *args, **kwargs):
+        serializer = ProfileSoundSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        sound = serializer.validated_data['sound']
+        user = request.user
+        user.is_sound = sound
+        user.save()
+
+        return Response(CustomUserSerializer(user, context={'request': request}).data, status=status.HTTP_200_OK)

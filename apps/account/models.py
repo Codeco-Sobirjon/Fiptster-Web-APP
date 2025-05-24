@@ -18,6 +18,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, verbose_name=_("Аватар"))
     invited = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True,
                                  related_name='invited_users', verbose_name=_("Пригласил"))
+    is_sound = models.BooleanField(default=True, verbose_name="Звук включен")
     is_active = models.BooleanField(default=True, verbose_name="Активен")
     is_staff = models.BooleanField(default=False, verbose_name="Персонал")
 

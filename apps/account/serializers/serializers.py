@@ -19,16 +19,44 @@ class UserProfileSerializer(serializers.ModelSerializer):
 class CustomUserSerializer(serializers.ModelSerializer):
     user_profile = serializers.SerializerMethodField()
     user_rank = serializers.SerializerMethodField()
+    profile_level = serializers.SerializerMethodField()
 
     class Meta:
         model = CustomUser
-        fields = ('id', 'tg_id', 'username', 'first_name', 'last_name', 'email', 'avatar', 'user_profile', 'user_rank')
+        fields = ('id', 'tg_id', 'username', 'first_name', 'last_name', 'email', 'avatar', 'user_profile', 'user_rank',
+                  'is_sound', 'profile_level')
 
     def get_user_profile(self, obj):
         user_profile = get_object_or_404(UserProfile, user=obj)
         if user_profile:
             return UserProfileSerializer(user_profile, context={'request': self.context.get('request')}).data
         return None
+
+    def get_profile_level(self, obj):
+        user_profile = UserProfile.objects.filter(user=obj).first()
+        if not user_profile:
+            return None
+
+        profile_type = user_profile.profile_type
+
+        type_order = [
+            UserProfile.UserProfileType.first_choice,
+            UserProfile.UserProfileType.second_choice,
+            UserProfile.UserProfileType.third_choice,
+            UserProfile.UserProfileType.fourth_choice,
+            UserProfile.UserProfileType.fifth_choice,
+            UserProfile.UserProfileType.sixth_choice,
+            UserProfile.UserProfileType.seventh_choice,
+            UserProfile.UserProfileType.eighth_choice,
+            UserProfile.UserProfileType.ninth_choice,
+            UserProfile.UserProfileType.tenth_choice,
+            UserProfile.UserProfileType.eleventh_choice,
+        ]
+
+        try:
+            return type_order.index(profile_type) + 1
+        except ValueError:
+            return None
 
     def get_user_rank(self, obj):
         user_profile = UserProfile.objects.filter(user=obj).first()
@@ -85,3 +113,7 @@ class ProfileTypeSerializer(serializers.Serializer):
     image = serializers.CharField(allow_null=True)
     coin_level = serializers.CharField()
     users_data = CustomUserSerializer(many=True)
+
+
+class ProfileSoundSerializer(serializers.Serializer):
+    sound = serializers.BooleanField(required=True)
