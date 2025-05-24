@@ -38,7 +38,20 @@ class CustomUserSerializer(serializers.ModelSerializer):
             return None
 
         profile_type = user_profile.profile_type
-        type_order = [choice[0] for choice in UserProfile.UserProfileType.choices]
+
+        type_order = [
+            UserProfile.UserProfileType.first_choice,
+            UserProfile.UserProfileType.second_choice,
+            UserProfile.UserProfileType.third_choice,
+            UserProfile.UserProfileType.fourth_choice,
+            UserProfile.UserProfileType.fifth_choice,
+            UserProfile.UserProfileType.sixth_choice,
+            UserProfile.UserProfileType.seventh_choice,
+            UserProfile.UserProfileType.eighth_choice,
+            UserProfile.UserProfileType.ninth_choice,
+            UserProfile.UserProfileType.tenth_choice,
+            UserProfile.UserProfileType.eleventh_choice,
+        ]
 
         try:
             return type_order.index(profile_type) + 1
