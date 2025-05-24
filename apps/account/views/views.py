@@ -136,7 +136,7 @@ class UserProfileAPIView(APIView):
         responses={
             200: openapi.Response(
                 description='User profile retrieved successfully',
-                schema=CustomUserSerializer,
+                schema=CustomUserSerializer(),
                 examples={
                     'application/json': {
                         'uuid': '12345678-1234-5678-1234-567812345678',
