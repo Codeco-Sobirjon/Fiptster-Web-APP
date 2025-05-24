@@ -21,7 +21,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
     user_rank = serializers.SerializerMethodField()
     profile_level = serializers.SerializerMethodField()
 
-
     class Meta:
         model = CustomUser
         fields = ('id', 'tg_id', 'username', 'first_name', 'last_name', 'email', 'avatar', 'user_profile', 'user_rank',
