@@ -103,14 +103,14 @@ class TelegramAuthAPIView(APIView):
                 defaults=defaults
             )
 
-            if referal_code:
+            if referal_code and referal_code.isdigit():
                 try:
                     inviter = get_object_or_404(CustomUser, tg_id=int(referal_code))
                     Referals.objects.create(
                         user=user,
                         invited_user=inviter
                     )
-                except (ObjectDoesNotExist, ValueError):
+                except ObjectDoesNotExist:
                     return Response({'error': 'Неверный реферальный код'}, status=status.HTTP_400_BAD_REQUEST)
 
             if created:
