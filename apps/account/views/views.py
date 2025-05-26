@@ -60,7 +60,7 @@ class TelegramAuthAPIView(APIView):
     )
     def post(self, request):
         init_data_str = request.data.get("initData", "")
-        referal_code = request.data.get("referal_code", None)
+        referal_code = request.data.get("referal_code", "")
         if not init_data_str:
             return Response({'error': 'initData — обязательное поле.'}, status=status.HTTP_400_BAD_REQUEST)
         try:
@@ -105,12 +105,12 @@ class TelegramAuthAPIView(APIView):
 
             if referal_code:
                 try:
-                    inviter = get_object_or_404(CustomUser, tg_id=referal_code)
+                    inviter = get_object_or_404(CustomUser, tg_id=int(referal_code))
                     Referals.objects.create(
                         user=user,
                         invited_user=inviter
                     )
-                except ObjectDoesNotExist:
+                except (ObjectDoesNotExist, ValueError):
                     return Response({'error': 'Неверный реферальный код'}, status=status.HTTP_400_BAD_REQUEST)
 
             if created:
