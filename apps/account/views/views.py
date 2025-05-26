@@ -36,7 +36,7 @@ class TelegramAuthAPIView(APIView):
             required=['initData'],
             properties={
                 'initData': openapi.Schema(type=openapi.TYPE_STRING, description='Telegram authentication initData string'),
-                'referal_code': openapi.Schema(type=openapi.TYPE_NUMBER, description='Optional referral code')
+                'referal_code': openapi.Schema(type=openapi.TYPE_STRING, description='Optional referral code tg_id')
             },
         ),
         responses={
@@ -105,7 +105,7 @@ class TelegramAuthAPIView(APIView):
 
             if referal_code:
                 try:
-                    inviter = get_object_or_404(CustomUser, id=referal_code)
+                    inviter = get_object_or_404(CustomUser, tg_id=referal_code)
                     Referals.objects.create(
                         user=user,
                         invited_user=inviter
