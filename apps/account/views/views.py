@@ -36,7 +36,7 @@ class TelegramAuthAPIView(APIView):
             required=['initData'],
             properties={
                 'initData': openapi.Schema(type=openapi.TYPE_STRING, description='Telegram authentication initData string'),
-                'referal_code': openapi.Schema(type=openapi.FORMAT_UUID, description='Optional referral code')
+                'referal_code': openapi.Schema(type=openapi.TYPE_NUMBER, description='Optional referral code')
             },
         ),
         responses={

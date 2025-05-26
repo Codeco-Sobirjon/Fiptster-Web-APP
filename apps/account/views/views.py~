@@ -105,7 +105,7 @@ class TelegramAuthAPIView(APIView):
 
             if referal_code:
                 try:
-                    inviter = get_object_or_404(CustomUser, uuid=referal_code)
+                    inviter = get_object_or_404(CustomUser, id=referal_code)
                     Referals.objects.create(
                         user=user,
                         invited_user=inviter
