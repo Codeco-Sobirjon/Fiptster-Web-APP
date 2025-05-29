@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.utils.html import format_html
 from django_celery_beat.models import PeriodicTask, IntervalSchedule, CrontabSchedule, ClockedSchedule, SolarSchedule
 
-from apps.account.models import CustomUser, UserProfile, ChannelsUser, ConnectToChannel, Referals
+from apps.account.models import CustomUser, UserProfile, ChannelsUser, ConnectToChannel, Referals, ReferalsPoints
 from django.utils.translation import gettext_lazy as _
 from django.utils.safestring import mark_safe
 from django.contrib.sites.models import Site
@@ -96,3 +96,9 @@ class ChannelsUserAdmin(admin.ModelAdmin):
 
     class Media:
         js = ('admin/js/secret_code_toggle.js',)
+
+
+@admin.register(ReferalsPoints)
+class ReferalsPointsAdmin(admin.ModelAdmin):
+    list_display = ('uuid', 'points', 'created_at')
+    list_filter = ('created_at',)

@@ -452,4 +452,3 @@ class UserReferalsView(APIView):
         referrals = Referals.objects.filter(user=user).select_related('invited_user')
 
         serializer = UserReferalsSerializer(referrals, many=True, context={'request': request})
-        return Response(serializer.data, status=status.HTTP_200_OK)

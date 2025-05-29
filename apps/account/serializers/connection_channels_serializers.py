@@ -12,7 +12,7 @@ class ChannelsUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChannelsUser
-        fields = ['uuid', 'channel_name', 'channel_coin', 'channel_link', 'channel_type', 'is_applied']
+        fields = ['uuid', 'channel_name', 'channel_coin', 'channel_link', 'channel_type', 'description', 'is_applied']
 
     def get_is_applied(self, obj):
         request = self.context.get('request')

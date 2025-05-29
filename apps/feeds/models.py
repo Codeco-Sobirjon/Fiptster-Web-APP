@@ -34,6 +34,8 @@ class Feed(models.Model):
 	thumbnail = models.ImageField(upload_to='thumbnails/', blank=True, null=True, verbose_name='Миниатюра')
 	type = models.CharField(max_length=255, choices=VideoType.choices, default=VideoType.REELS, verbose_name='Тип')
 	category = models.ForeignKey(FeedCategory, on_delete=models.CASCADE, related_name='feeds', verbose_name='Категория')
+	send_feed = models.IntegerField(default=0, verbose_name='Отправить ленту')
+	feeds_source = models.URLField(max_length=255, null=True, blank=True, verbose_name='Источник ленты')
 	created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
 
 	objects = models.Manager()

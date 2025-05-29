@@ -138,7 +138,6 @@ class ChannelsUser(models.Model):
     channel_name = models.CharField(max_length=255, verbose_name=_("Имя канала"), null=True, blank=True)
     channel_coin = models.CharField(max_length=255, verbose_name=_("Канал монет"), null=True, blank=True)
     channel_link = models.CharField(max_length=255, verbose_name=_("URL канала"), null=True, blank=True)
-    description = models.TextField(verbose_name=_("Описание"), null=True, blank=True)
     secret_code = models.CharField(max_length=255, verbose_name=_("Секретный код"), null=True, blank=True)
     task_type = models.CharField(max_length=50, choices=TaskType.choices, default=TaskType.first_choice,
                                  verbose_name=_("Тип задачи"))

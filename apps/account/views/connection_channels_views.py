@@ -107,4 +107,3 @@ class ModifiedProfitPerTabView(APIView):
         profile_profit_per_hour_increment.save()
         return Response({"msg": "Successfully modified"}, status=status.HTTP_200_OK)
 
-

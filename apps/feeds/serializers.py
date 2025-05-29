@@ -63,7 +63,7 @@ class FeedDetailSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = Feed
-		fields = ('uuid', 'name', 'video_file', 'thumbnail', 'feed_category', 'description', 'feed_comment_count',
+		fields = ('uuid', 'name', 'video_file', "send_feed", 'feeds_source', 'thumbnail', 'feed_category', 'description', 'feed_comment_count',
 		          'feed_like_count', 'feed_like_list', 'feed_comment_list', 'created_at')
 
 	def get_feed_comment_count(self, obj):

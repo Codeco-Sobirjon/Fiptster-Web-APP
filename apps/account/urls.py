@@ -24,5 +24,6 @@ urlpatterns = [
 
 	path('profile/coin_updated/', UserCoinUpdatedView.as_view(), name='user-coin-updated'),
 	path('profile/sound/', ProfileSoundView.as_view(), name='profile-sound'),
+
 ]
 

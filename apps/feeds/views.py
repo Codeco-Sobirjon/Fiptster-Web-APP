@@ -128,6 +128,8 @@ class FeedDetailView(APIView):
 	def get(self, request, uuid):
 		try:
 			feed = Feed.objects.get(uuid=uuid)
+			feed.send_feed += 1
+			feed.save()
 		except ObjectDoesNotExist:
 			return Response({"error": "Feed not found"}, status=status.HTTP_404_NOT_FOUND)
 		serializer = self.serializer_class(feed, context={'request': request})
@@ -178,6 +180,37 @@ class FeedCommentLikeView(APIView):
 		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class FeedCommentDisLikeView(APIView):
+	permission_classes = [IsAuthenticated]
+
+	@swagger_auto_schema(
+		tags=["Feeds Comments Likes"],
+		manual_parameters=[
+			openapi.Parameter(
+				'uuid',
+				openapi.IN_PATH,
+				description="UUID комментария",
+				type=openapi.TYPE_STRING,
+				format='uuid',
+				required=True
+			),
+		],
+		responses={
+			200: openapi.Response(
+				description="Успешное удаление лайка к комментарию",
+				schema=FeedCommentLikeSerializer()
+			)
+		}
+	)
+	def delete(self, request, *args, **kwargs):
+		try:
+			comment_like = FeedCommentLike.objects.get(comment__uuid=kwargs['uuid'], user=request.user)
+			comment_like.delete()
+			return Response({"message": "Like removed successfully"}, status=status.HTTP_200_OK)
+		except ObjectDoesNotExist:
+			return Response({"error": "Like not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
 class FeedLikeListView(APIView):
 	permission_classes = [IsAuthenticated]
 	serializer_class = FeedLikeListSerializer
@@ -198,3 +231,33 @@ class FeedLikeListView(APIView):
 			serializer.save()
 			return Response(serializer.data, status=status.HTTP_200_OK)
 		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FeedDisLikeView(APIView):
+	permission_classes = [IsAuthenticated]
+
+	@swagger_auto_schema(
+		tags=["Feeds Likes"],
+		manual_parameters=[
+			openapi.Parameter(
+				'uuid',
+				openapi.IN_PATH,
+				description="UUID поста",
+				type=openapi.TYPE_STRING,
+				format='uuid',
+				required=True
+			),
+		],
+		responses={
+			200: openapi.Response(
+				description="Успешное удаление лайка к ленте"
+			)
+		}
+	)
+	def delete(self, request, *args, **kwargs):
+		try:
+			feed_like = FeedLike.objects.get(feed__uuid=kwargs['uuid'], user=request.user)
+			feed_like.delete()
+			return Response({"message": "Like removed successfully"}, status=status.HTTP_200_OK)
+		except ObjectDoesNotExist:
+			return Response({"error": "Like not found"}, status=status.HTTP_404_NOT_FOUND)

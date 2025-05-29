@@ -5,7 +5,9 @@ from apps.feeds.views import (
 	FeedDetailView,
 	FeedCommentListView,
 	FeedCommentLikeView,
-	FeedLikeListView
+	FeedCommentDisLikeView,
+	FeedLikeListView,
+	FeedDisLikeView
 )
 
 
@@ -16,6 +18,8 @@ urlpatterns = [
 
 	path('feeds/comments/', FeedCommentListView.as_view(), name='feed-comment-list'),
 	path('feeds/comments/like/', FeedCommentLikeView.as_view(), name='feed-comment-like'),
+	path('feeds/comments/dislike/<uuid:uuid>/', FeedCommentDisLikeView.as_view(), name='feed-comment-dislike'),
 
 	path('feeds/likes/', FeedLikeListView.as_view(), name='feed-like-list'),
+	path('feeds/dislike/<uuid:uuid>/', FeedDisLikeView.as_view(), name='feed-dislike'),
 ]

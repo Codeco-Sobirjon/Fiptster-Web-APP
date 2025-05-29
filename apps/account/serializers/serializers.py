@@ -5,7 +5,7 @@ from django.db.models import Window, F
 from django.db.models.functions import DenseRank as DenseRankFunc
 from rest_framework.exceptions import AuthenticationFailed
 
-from apps.account.models import CustomUser, UserProfile
+from apps.account.models import CustomUser, UserProfile, Referals, ReferalsPoints
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -104,3 +104,23 @@ class ProfileTypeSerializer(serializers.Serializer):
 
 class ProfileSoundSerializer(serializers.Serializer):
     sound = serializers.BooleanField(required=True)
+
+
+class UserReferalsSerializer(serializers.ModelSerializer):
+    invited_user = CustomUserSerializer()
+    points = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Referals
+        fields = ('invited_user', 'points' 'created_at')
+
+    def get_points(self, obj):
+        referal_points = ReferalsPoints.objects.first()
+        if referal_points:
+            return referal_points.points
+        return 0
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['invited_user'] = representation['invited_user']['username']
+        return representation
