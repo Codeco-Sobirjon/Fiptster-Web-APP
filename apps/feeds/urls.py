@@ -16,10 +16,10 @@ urlpatterns = [
 	path('feeds/', FeedListView.as_view(), name='feed-list'),
 	path('feeds/<uuid:uuid>/', FeedDetailView.as_view(), name='feed-detail'),
 
-	path('feeds/comments/', FeedCommentListView.as_view(), name='feed-comment-list'),
-	path('feeds/comments/like/', FeedCommentLikeView.as_view(), name='feed-comment-like'),
+	path('feeds/comments/<uuid:uuid>/', FeedCommentListView.as_view(), name='feed-comment-list'),
+	path('feeds/comments/like/<uuid:uuid>/', FeedCommentLikeView.as_view(), name='feed-comment-like'),
 	path('feeds/comments/dislike/<uuid:uuid>/', FeedCommentDisLikeView.as_view(), name='feed-comment-dislike'),
 
-	path('feeds/likes/', FeedLikeListView.as_view(), name='feed-like-list'),
+	path('feeds/likes/<uuid:uuid>/', FeedLikeListView.as_view(), name='feed-like-list'),
 	path('feeds/dislike/<uuid:uuid>/', FeedDisLikeView.as_view(), name='feed-dislike'),
 ]

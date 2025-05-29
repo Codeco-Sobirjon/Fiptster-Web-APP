@@ -53,3 +53,7 @@ class FeedCommentAdmin(admin.ModelAdmin):
 
 admin.site.unregister(FeedLike) if admin.site.is_registered(FeedLike) else None
 admin.site.unregister(FeedCommentLike) if admin.site.is_registered(FeedCommentLike) else None
+
+# admin.site.register(FeedComment)
+# admin.site.register(FeedLike)
+# admin.site.register(FeedCommentLike)

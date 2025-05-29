@@ -13,7 +13,7 @@ class ReferalsInline(admin.TabularInline):
     model = Referals
     fk_name = 'invited_user'
     extra = 0
-    fields = ("invited_user", "created_at")
+    fields = ["invited_user"]
 
 
 class ConnectToChannelInline(admin.TabularInline):

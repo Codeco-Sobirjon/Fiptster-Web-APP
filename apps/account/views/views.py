@@ -8,6 +8,7 @@ from urllib.parse import urljoin
 import requests
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 
 from django.core.files.base import ContentFile
@@ -106,14 +107,22 @@ class TelegramAuthAPIView(APIView):
             if referal_code and referal_code.isdigit():
                 try:
                     inviter = get_object_or_404(CustomUser, tg_id=int(referal_code))
-                    Referals.objects.create(
-                        user=user,
-                        invited_user=inviter
-                    )
 
-                    referal_point = ReferalsPoints.objects.first()
-                    inviter__profile__coin = inviter.user_profile.coin + referal_point.points
-                    inviter.user_profile.save()
+                    inviter_profile = inviter.profile.first()
+                    if not inviter_profile:
+                        pass
+
+                    with transaction.atomic():
+                        Referals.objects.create(
+                            user=user,
+                            invited_user=inviter
+                        )
+                        referal_point = ReferalsPoints.objects.first()
+                        if referal_point:
+                            inviter_profile.coin += referal_point.points
+                            inviter_profile.save()
+                        else:
+                            return Response({'error': 'Баллы рефералов не найдены'}, status=status.HTTP_400_BAD_REQUEST)
 
                 except ObjectDoesNotExist:
                     return Response({'error': 'Неверный реферальный код'}, status=status.HTTP_400_BAD_REQUEST)

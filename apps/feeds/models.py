@@ -14,15 +14,14 @@ class FeedCategory(models.Model):
 	objects = models.Manager()
 
 	class Meta:
-		verbose_name = 'Категория'
-		verbose_name_plural = 'Категории'
+		verbose_name = '1. Категория'
+		verbose_name_plural = '1. Категории'
 
 	def __str__(self):
 		return self.name
 
 
 class Feed(models.Model):
-
 	class VideoType(models.TextChoices):
 		REELS = 'reels', 'Reels'
 		ADVERTISEMENT = 'advertisement', 'Advertisement'
@@ -41,17 +40,19 @@ class Feed(models.Model):
 	objects = models.Manager()
 
 	class Meta:
-		verbose_name = 'Лента'
-		verbose_name_plural = 'Ленты'
+		verbose_name = '2. Лента'
+		verbose_name_plural = '2. Ленты'
 
 	def __str__(self):
 		return self.name
 
 
 class FeedLike(models.Model):
-	uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, verbose_name='UUID')
-	user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='feed_likes', verbose_name='Пользователь')
-	feed = models.ForeignKey(Feed, on_delete=models.CASCADE, related_name='likes', verbose_name='Лента')
+	uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+	user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='feed_likes', verbose_name='Пользователь',
+	                         null=True, blank=True)
+	feed = models.ForeignKey(Feed, on_delete=models.CASCADE, related_name='likes', verbose_name='Лента',
+	                         null=True, blank=True)
 	created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
 
 	objects = models.Manager()
@@ -66,8 +67,10 @@ class FeedLike(models.Model):
 
 class FeedComment(models.Model):
 	uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, verbose_name='UUID')
-	user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='feed_comments', verbose_name='Пользователь')
-	feed = models.ForeignKey(Feed, on_delete=models.CASCADE, related_name='comments', verbose_name='Лента')
+	user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='feed_comments', verbose_name='Пользователь',
+	                         null=True, blank=True)
+	feed = models.ForeignKey(Feed, on_delete=models.CASCADE, related_name='comments', verbose_name='Лента',
+	                         null=True, blank=True)
 	text = models.TextField(verbose_name='Текст')
 	created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
 
@@ -83,15 +86,19 @@ class FeedComment(models.Model):
 
 class FeedCommentLike(models.Model):
 	uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, verbose_name='UUID')
-	user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='feed_comment_likes', verbose_name='Пользователь')
-	feed_comment = models.ForeignKey(FeedComment, on_delete=models.CASCADE, related_name='likes', verbose_name='Комментарии')
+	user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='feed_comment_likes',
+	                         verbose_name='Пользователь',
+	                         null=True, blank=True)
+	feed_comment = models.ForeignKey(FeedComment, on_delete=models.CASCADE, related_name='comment_likes',
+	                                 verbose_name='Комментарии',
+	                                 null=True, blank=True)
 	created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
 
 	objects = models.Manager()
 
 	class Meta:
-		verbose_name = 'Лайк'
-		verbose_name_plural = 'Лайки'
+		verbose_name = 'Комментарии Лайк'
+		verbose_name_plural = ' Комментарии Лайки'
 
 	def __str__(self):
-		return f"{self.user.username} - {self.feed_comment.text}"
+		return f"{self.user.username}"

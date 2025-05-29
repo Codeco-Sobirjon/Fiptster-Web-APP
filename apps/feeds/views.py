@@ -1,8 +1,11 @@
+from uuid import UUID
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from kombu import uuid
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -143,6 +146,16 @@ class FeedCommentListView(APIView):
 	@swagger_auto_schema(
 		tags=["Feeds Comments"],
 		request_body=FeedCommentListSerializer,
+		manual_parameters=[
+			openapi.Parameter(
+				'uuid',
+				openapi.IN_PATH,
+				description="UUID поста, к которому добавляется комментарий",
+				type=openapi.TYPE_STRING,
+				format='uuid',
+				required=True
+			),
+		],
 		responses={
 			200: openapi.Response(
 				description="Успешное создание комментария к ленте",
@@ -151,10 +164,12 @@ class FeedCommentListView(APIView):
 		}
 	)
 	def post(self, request, *args, **kwargs):
-		serializer = self.serializer_class(data=request.data, context={'request': request})
+		feed_uuid = kwargs.get('uuid')
+		feed = get_object_or_404(Feed, uuid=feed_uuid)
+		serializer = self.serializer_class(data=request.data, context={'request': request, 'feed': feed})
 		if serializer.is_valid():
 			serializer.save()
-			return Response(serializer.data, status=status.HTTP_200_OK)
+			return Response({"message": "Comment added successfully"}, status=status.HTTP_200_OK)
 		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -165,6 +180,16 @@ class FeedCommentLikeView(APIView):
 	@swagger_auto_schema(
 		tags=["Feeds Comments Likes"],
 		request_body=FeedCommentLikeSerializer,
+		manual_parameters=[
+			openapi.Parameter(
+				'uuid',
+				openapi.IN_PATH,
+				description="UUID комментария, к которому добавляется лайк",
+				type=openapi.TYPE_STRING,
+				format='uuid',
+				required=True
+			),
+		],
 		responses={
 			200: openapi.Response(
 				description="Успешное добавление лайка к комментарию",
@@ -173,10 +198,12 @@ class FeedCommentLikeView(APIView):
 		}
 	)
 	def post(self, request, *args, **kwargs):
-		serializer = self.serializer_class(data=request.data, context={'request': request})
+		feed_comment_uuid = kwargs.get('uuid')
+		comment = get_object_or_404(FeedComment, uuid=feed_comment_uuid)
+		serializer = self.serializer_class(data=request.data, context={'request': request, 'comment': comment})
 		if serializer.is_valid():
 			serializer.save()
-			return Response(serializer.data, status=status.HTTP_200_OK)
+			return Response({"message": "Like added successfully"}, status=status.HTTP_200_OK)
 		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -204,7 +231,8 @@ class FeedCommentDisLikeView(APIView):
 	)
 	def delete(self, request, *args, **kwargs):
 		try:
-			comment_like = FeedCommentLike.objects.get(comment__uuid=kwargs['uuid'], user=request.user)
+			comment = get_object_or_404(FeedComment, uuid=kwargs['uuid'])
+			comment_like = FeedCommentLike.objects.get(feed_comment=comment, user=request.user)
 			comment_like.delete()
 			return Response({"message": "Like removed successfully"}, status=status.HTTP_200_OK)
 		except ObjectDoesNotExist:
@@ -213,24 +241,29 @@ class FeedCommentDisLikeView(APIView):
 
 class FeedLikeListView(APIView):
 	permission_classes = [IsAuthenticated]
-	serializer_class = FeedLikeListSerializer
-
 	@swagger_auto_schema(
 		tags=["Feeds Likes"],
-		request_body=FeedLikeListSerializer,
+		manual_parameters=[
+			openapi.Parameter(
+				'feed',
+				openapi.IN_PATH,
+				description="UUID поста",
+				type=openapi.TYPE_STRING,
+				format='uuid',
+				required=True
+			),
+		],
 		responses={
 			200: openapi.Response(
-				description="Успешное добавление лайка к ленте",
-				schema=FeedLikeListSerializer()
+				description="Успешное добавление лайка к ленте"
 			)
 		}
 	)
-	def post(self, request, *args, **kwargs):
-		serializer = self.serializer_class(data=request.data, context={'request': request})
-		if serializer.is_valid():
-			serializer.save()
-			return Response(serializer.data, status=status.HTTP_200_OK)
-		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+	def get(self, request, *args, **kwargs):
+		feed = get_object_or_404(Feed, uuid=kwargs.get('uuid'))
+		FeedLike.objects.get_or_create(user=request.user, feed=feed)
+		return Response({"message": "Like added successfully"}, status=status.HTTP_200_OK)
 
 
 class FeedDisLikeView(APIView):
