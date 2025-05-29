@@ -5,8 +5,8 @@ from multiselectfield import MultiSelectField
 
 class Category(models.Model):
 	uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, verbose_name='UUID')
-	name = models.CharField(max_length=255, verbose_name='Название категории')
-	created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
+	name = models.CharField(max_length=255, verbose_name='Category Name')
+	created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created At')
 
 	objects = models.Manager()
 
@@ -14,8 +14,8 @@ class Category(models.Model):
 		return self.name
 
 	class Meta:
-		verbose_name = '1. Категория'
-		verbose_name_plural = '1. Категории'
+		verbose_name = '1. Category'
+		verbose_name_plural = '1. Categories'
 
 
 class Market(models.Model):
@@ -28,13 +28,13 @@ class Market(models.Model):
 		sixth_choice = 'XXL', 'XXL'
 
 	uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, verbose_name='UUID')
-	name = models.CharField(max_length=255, verbose_name='Название товара')
-	price_fiptp = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Цена в FIPTP')
-	price_dollor = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Цена в долларах')
-	image = models.ImageField(upload_to='market/', verbose_name='Изображение')
-	sizes = MultiSelectField(choices=SizeType.choices, verbose_name='Размеры', null=True, blank=True)
-	category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products', verbose_name='Категория')
-	created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
+	name = models.CharField(max_length=255, verbose_name='Product Name')
+	price_fiptp = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Price (FIPTP)')
+	price_dollor = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Price (USD)')
+	image = models.ImageField(upload_to='market/', verbose_name='Image')
+	sizes = MultiSelectField(choices=SizeType.choices, verbose_name='Sizes', null=True, blank=True)
+	category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products', verbose_name='Category')
+	created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created At')
 
 	objects = models.Manager()
 
@@ -42,8 +42,8 @@ class Market(models.Model):
 		return self.name
 
 	class Meta:
-		verbose_name = '2. Товар'
-		verbose_name_plural = '2. Товары'
+		verbose_name = '2. Product'
+		verbose_name_plural = '2. Products'
 
 
 class Order(models.Model):
@@ -57,21 +57,20 @@ class Order(models.Model):
 
 	uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, verbose_name='UUID')
 	user = models.ForeignKey('account.CustomUser', on_delete=models.CASCADE, related_name='orders',
-	                         verbose_name='Пользователь',
-	                         null=True, blank=True)
-	market = models.ForeignKey(Market, on_delete=models.CASCADE, related_name='orders', verbose_name='Товар')
-	sizes = MultiSelectField(choices=SizeType.choices, verbose_name='Размеры')
-	full_name = models.CharField(max_length=255, verbose_name='ФИО')
+	                         verbose_name='User', null=True, blank=True)
+	market = models.ForeignKey(Market, on_delete=models.CASCADE, related_name='orders', verbose_name='Product')
+	sizes = MultiSelectField(choices=SizeType.choices, verbose_name='Sizes')
+	full_name = models.CharField(max_length=255, verbose_name='Full Name')
 	email = models.EmailField(verbose_name='Email')
-	address = models.CharField(max_length=255, verbose_name='Адрес')
-	city = models.CharField(max_length=255, verbose_name='Город')
-	country = models.CharField(max_length=255, verbose_name='Страна')
-	zip_code = models.CharField(max_length=20, verbose_name='Почтовый индекс')
-	is_shipping = models.BooleanField(default=False, verbose_name='Доставка')
-	created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
+	address = models.CharField(max_length=255, verbose_name='Address')
+	city = models.CharField(max_length=255, verbose_name='City')
+	country = models.CharField(max_length=255, verbose_name='Country')
+	zip_code = models.CharField(max_length=20, verbose_name='Postal Code')
+	is_shipping = models.BooleanField(default=False, verbose_name='Shipping')
+	created_at = models.DateTimeField(auto_now_add=True, verbose_name='Created At')
 
 	objects = models.Manager()
 
 	class Meta:
-		verbose_name = '3. Заказ'
-		verbose_name_plural = '3. Заказы'
+		verbose_name = '3. Order'
+		verbose_name_plural = '3. Orders'

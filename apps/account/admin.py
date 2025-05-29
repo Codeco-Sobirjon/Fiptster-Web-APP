@@ -69,9 +69,9 @@ class CustomUserAdmin(UserAdmin):
 
 admin.site.register(CustomUser, CustomUserAdmin)
 
-admin.site.site_header = _("Fiptster Администрации Панель. ")
-admin.site.site_title = _("Fiptster Панель управления.")
-admin.site.index_title = _("Добро пожаловать в админку Fiptster.")
+admin.site.site_header = _("Fiptster Administration Panel")
+admin.site.site_title = _("Fiptster Admin Dashboard")
+admin.site.index_title = _("Welcome to the Fiptster Admin Panel")
 
 admin.site.unregister(Site)
 admin.site.unregister(PeriodicTask)
@@ -80,7 +80,6 @@ admin.site.unregister(CrontabSchedule)
 admin.site.unregister(ClockedSchedule)
 admin.site.unregister(SolarSchedule)
 
-admin.site.register(UserProfile)
 
 
 @admin.register(ChannelsUser)

@@ -1,0 +1,37 @@
+from rest_framework import serializers
+
+from apps.token_swap.models import TokenSwap
+from apps.account.serializers.serializers import CustomUserSerializer
+
+
+class TokenSwapSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = TokenSwap
+		fields = ('uuid', 'amount', 'created_at')
+		read_only_fields = ('uuid', 'amount_from', 'amount_to')
+
+	def create(self, validated_data):
+		user = self.context['request'].user
+		exchange_amount = 0.2
+		amount = validated_data.get('amount', 0)
+		user_profile = user.profile.first()
+
+		if amount <= 0:
+			raise serializers.ValidationError("Amount must be greater than zero.")
+
+		if user_profile and user_profile.coin < int(amount):
+			raise serializers.ValidationError("Insufficient coins for the swap.")
+
+		total_exchange = float(exchange_amount * int(amount))
+
+		token_swap = TokenSwap.objects.create(
+			user=user,
+			amount=amount,
+			total_exchange=total_exchange
+		)
+
+		if user_profile:
+			user_profile.coin -= int(amount)
+			user_profile.save()
+
+		return token_swap
