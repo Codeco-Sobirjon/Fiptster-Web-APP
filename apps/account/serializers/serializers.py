@@ -107,7 +107,7 @@ class UserReferalsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Referals
-        fields = ('invited_user', 'points' 'created_at')
+        fields = ('invited_user', 'points', 'created_at')
 
     def get_points(self, obj):
         referal_points = ReferalsPoints.objects.first()
