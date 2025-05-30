@@ -98,24 +98,24 @@ class TelegramAuthAPIView(APIView):
                 try:
                     inviter = get_object_or_404(CustomUser, tg_id=int(referal_code))
 
-                    inviter_profile = inviter.profile.first()
-                    if not inviter_profile:
-                        pass
-
-                    with transaction.atomic():
-                        Referals.objects.create(
-                            user=user,
-                            invited_user=inviter
-                        )
-                        referal_point = ReferalsPoints.objects.first()
-                        if referal_point:
-                            inviter_profile.coin += referal_point.points
-                            inviter_profile.save()
-                        else:
-                            return Response({'error': 'Баллы рефералов не найдены'}, status=status.HTTP_400_BAD_REQUEST)
+                    already_referred = Referals.objects.filter(user=user, invited_user=inviter).exists()
+                    if not already_referred:
+                        inviter_profile = inviter.profile.first()
+                        with transaction.atomic():
+                            Referals.objects.create(
+                                user=user,
+                                invited_user=inviter
+                            )
+                            referal_point = ReferalsPoints.objects.first()
+                            if referal_point and inviter_profile:
+                                inviter_profile.coin += referal_point.points
+                                inviter_profile.save()
+                            elif not referal_point:
+                                return Response({'error': 'Баллы рефералов не найдены'},
+                                                status=status.HTTP_400_BAD_REQUEST)
 
                 except ObjectDoesNotExist:
-                    return Response({'error': 'Неверный реферальный код'}, status=status.HTTP_400_BAD_REQUEST)
+                    pass
 
             if created:
                 UserProfile.objects.create(user=user)
