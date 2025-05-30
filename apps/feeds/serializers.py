@@ -102,7 +102,7 @@ class FeedDetailSerializer(serializers.ModelSerializer):
 		return FeedLikeSerializer(obj.likes.all(), many=True, context={'request': self.context.get('request')}).data
 
 	def get_feed_comment_list(self, obj):
-		return FeedCommentSerializer(obj.comments.all(), many=True,
+		return FeedCommentSerializer(obj.comments.all().order_by('-created_at'), many=True,
 		                             context={'request': self.context.get('request')}).data
 
 

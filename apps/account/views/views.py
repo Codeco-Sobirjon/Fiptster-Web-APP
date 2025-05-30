@@ -462,3 +462,27 @@ class UserReferalsView(APIView):
 
         serializer = UserReferalsSerializer(referrals, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class RefaralsPointsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        tags=['Account'],
+        operation_description="Retrieve the referral points of the authenticated user",
+        responses={
+            200: openapi.Response(
+                description='Referral points retrieved successfully',
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'referral_points': openapi.Schema(type=openapi.TYPE_INTEGER, description='Referral points')
+                    }
+                )
+            ),
+            404: openapi.Response(description='User profile not found')
+        }
+    )
+    def get(self, request):
+        referal_points = ReferalsPoints.objects.first()
+        return Response({'referral_points': referal_points.points}, status=status.HTTP_200_OK)
