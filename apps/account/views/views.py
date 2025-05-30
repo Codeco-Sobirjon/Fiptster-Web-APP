@@ -453,25 +453,31 @@ class UserReferalsView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class RefaralsPointsView(APIView):
+class ReferalsPointsView(APIView):
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
         tags=['Account'],
-        operation_description="Retrieve the referral points of the authenticated user",
+        operation_description="Retrieve global referral points",
         responses={
             200: openapi.Response(
                 description='Referral points retrieved successfully',
                 schema=openapi.Schema(
                     type=openapi.TYPE_OBJECT,
                     properties={
-                        'referral_points': openapi.Schema(type=openapi.TYPE_INTEGER, description='Referral points')
+                        'referral_points': openapi.Schema(
+                            type=openapi.TYPE_NUMBER,
+                            format='float',
+                            description='Referral points'
+                        )
                     }
                 )
             ),
-            404: openapi.Response(description='User profile not found')
+            404: openapi.Response(description='Referral points not found')
         }
     )
     def get(self, request):
-        referal_points = ReferalsPoints.objects.first()
-        return Response({'referral_points': referal_points.points}, status=status.HTTP_200_OK)
+        referral_points = ReferalsPoints.objects.first()
+        if not referral_points:
+            return Response({'detail': 'Referral points not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'referral_points': referral_points.points}, status=status.HTTP_200_OK)
