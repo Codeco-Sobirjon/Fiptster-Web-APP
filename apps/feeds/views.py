@@ -56,7 +56,7 @@ class FeedListView(APIView):
 		tags=["Feeds"],
 		manual_parameters=[
 			openapi.Parameter(
-				'category_uuid',
+				'category',
 				openapi.IN_QUERY,
 				description="Filter by category UUID",
 				type=openapi.FORMAT_UUID
