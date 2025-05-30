@@ -15,7 +15,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 	username = models.CharField(max_length=250, unique=True, verbose_name="Username", null=True, blank=True)
 	first_name = models.CharField(max_length=30, verbose_name="First Name", null=True, blank=True)
 	last_name = models.CharField(max_length=30, verbose_name="Last Name", null=True, blank=True)
-	avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, verbose_name=_("Avatar"))
+	avatar = models.URLField(blank=True, null=True, verbose_name=_("Avatar"))
 	invited = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True,
 	                            related_name='invited_users', verbose_name=_("Invited By"))
 	is_sound = models.BooleanField(default=True, verbose_name="Sound Enabled")
