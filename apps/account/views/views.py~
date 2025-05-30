@@ -91,7 +91,8 @@ class TelegramAuthAPIView(APIView):
 
             user, created = CustomUser.objects.update_or_create(
                 tg_id=telegram_id,
-                defaults=defaults
+                defaults=defaults,
+                avatar=image_url if image_url else None
             )
 
             if referal_code and referal_code.isdigit():
