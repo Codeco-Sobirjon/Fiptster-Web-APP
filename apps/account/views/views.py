@@ -22,7 +22,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.account.models import CustomUser, UserProfile, Referals, ReferalsPoints
 from apps.account.serializers.serializers import CustomUserSerializer, CustomAuthTokenSerializer, \
-    UserProfileSerializer, ProfileTypeSerializer, ProfileSoundSerializer, UserReferalsSerializer
+    UserProfileSerializer, ProfileTypeSerializer, ProfileSoundSerializer, UserReferalsSerializer, \
+    ReferalsPointsSerializer
 from apps.account.utils.telegram_auth import check_auth, TOKEN
 
 
@@ -477,7 +478,6 @@ class ReferalsPointsView(APIView):
         }
     )
     def get(self, request):
-        referral_points = ReferalsPoints.objects.first()
-        if not referral_points:
-            return Response({'detail': 'Referral points not found'}, status=status.HTTP_404_NOT_FOUND)
-        return Response({'referral_points': referral_points.points}, status=status.HTTP_200_OK)
+        referral_points = ReferalsPoints.objects.all()
+        serializer = ReferalsPointsSerializer(referral_points, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)

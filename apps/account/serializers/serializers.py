@@ -121,5 +121,12 @@ class UserReferalsSerializer(serializers.ModelSerializer):
         return representation
 
 
-class UserReferalsPointsSerializer(serializers.ModelSerializer):
-    pass
+class ReferalsPointsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReferalsPoints
+        fields = ('uuid', 'points', 'created_at')
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['points'] = str(representation['points'])
+        return representation
