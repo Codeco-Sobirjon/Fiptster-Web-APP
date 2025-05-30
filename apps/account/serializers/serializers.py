@@ -51,18 +51,13 @@ class CustomUserSerializer(serializers.ModelSerializer):
             return None
 
         profile_type = user_profile.profile_type
-        user_coin = user_profile.coin
+        similar_profiles = UserProfile.objects.filter(profile_type=profile_type).order_by('-coin')
+        user_ids = [profile.user.id for profile in similar_profiles]
 
-        rank_query = UserProfile.objects.filter(
-            profile_type=profile_type
-        ).annotate(
-            rank=Window(
-                expression=DenseRankFunc(),
-                order_by=F('coin').desc()
-            )
-        ).filter(user=obj).values('rank').first()
-
-        return rank_query['rank'] if rank_query else None
+        try:
+            return user_ids.index(obj.id) + 1
+        except ValueError:
+            return None
 
 
 class CustomAuthTokenSerializer(serializers.Serializer):
@@ -124,3 +119,7 @@ class UserReferalsSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         representation['invited_user'] = representation['invited_user']['username']
         return representation
+
+
+class UserReferalsPointsSerializer(serializers.ModelSerializer):
+    pass
