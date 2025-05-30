@@ -102,12 +102,12 @@ class ProfileSoundSerializer(serializers.Serializer):
 
 
 class UserReferalsSerializer(serializers.ModelSerializer):
-    invited_user = CustomUserSerializer()
+    user = CustomUserSerializer()
     points = serializers.SerializerMethodField()
 
     class Meta:
         model = Referals
-        fields = ('invited_user', 'points', 'created_at')
+        fields = ('user', 'points', 'created_at')
 
     def get_points(self, obj):
         referal_points = ReferalsPoints.objects.first()

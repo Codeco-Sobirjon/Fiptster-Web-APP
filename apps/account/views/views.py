@@ -447,7 +447,7 @@ class UserReferalsView(APIView):
     )
     def get(self, request):
         user = request.user
-        referrals = Referals.objects.filter(user=user).select_related('invited_user')
+        referrals = Referals.objects.filter(invited_user=user).select_related('user')
         for i in referrals:
             print(f"Referral: {i.invited_user.username} - {i.user.username}")
 
