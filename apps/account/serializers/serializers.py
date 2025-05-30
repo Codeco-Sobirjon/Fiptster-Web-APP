@@ -117,7 +117,7 @@ class UserReferalsSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['invited_user'] = representation['invited_user']['username']
+        representation['user'] = representation['user']['username']
         return representation
 
 
