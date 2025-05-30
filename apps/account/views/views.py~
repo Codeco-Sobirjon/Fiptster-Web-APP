@@ -455,7 +455,7 @@ class UserReferalsView(APIView):
 
 
 class ReferalsPointsView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
         tags=['Account'],
