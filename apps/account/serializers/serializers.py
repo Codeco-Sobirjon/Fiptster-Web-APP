@@ -115,11 +115,6 @@ class UserReferalsSerializer(serializers.ModelSerializer):
             return referal_points.points
         return 0
 
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation['invited_user'] = representation['invited_user']['username']
-        return representation
-
 
 class ReferalsPointsSerializer(serializers.ModelSerializer):
     class Meta:
