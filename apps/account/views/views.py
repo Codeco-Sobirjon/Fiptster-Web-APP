@@ -97,19 +97,24 @@ class TelegramAuthAPIView(APIView):
             if referal_code and referal_code.isdigit():
                 try:
                     inviter = get_object_or_404(CustomUser, tg_id=int(referal_code))
-
+                    print(f"Inviter found: {inviter.username} (ID: {inviter.tg_id})")
                     already_referred = Referals.objects.filter(user=user, invited_user=inviter).exists()
+                    print(f"Already referred: {already_referred}")
                     if not already_referred:
                         inviter_profile = inviter.profile.first()
+                        print(f"Inviter profile: {inviter_profile}")
                         with transaction.atomic():
                             Referals.objects.create(
                                 user=user,
                                 invited_user=inviter
                             )
+                            print(f"Referral created for user: {user.username} by inviter: {inviter.username}")
                             referal_point = ReferalsPoints.objects.first()
+                            print(f"Referral points: {referal_point}")
                             if referal_point and inviter_profile:
                                 inviter_profile.coin += referal_point.points
                                 inviter_profile.save()
+                                print(f"Inviter {inviter.username} coin updated: {inviter_profile.coin}")
                             elif not referal_point:
                                 return Response({'error': 'Баллы рефералов не найдены'},
                                                 status=status.HTTP_400_BAD_REQUEST)
