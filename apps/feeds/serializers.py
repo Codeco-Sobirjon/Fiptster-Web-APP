@@ -57,13 +57,20 @@ class FeedLikeSerializer(serializers.ModelSerializer):
 class FeedCommentSerializer(serializers.ModelSerializer):
 	user = CustomUserSerializer(read_only=True)
 	comment_like_count = serializers.SerializerMethodField()
+	comment_is_liked = serializers.SerializerMethodField()
 
 	class Meta:
 		model = FeedComment
-		fields = ('uuid', 'user', 'feed', 'text', 'comment_like_count', 'created_at')
+		fields = ('uuid', 'user', 'feed', 'text', 'comment_like_count', 'comment_is_liked', 'created_at')
 
 	def get_comment_like_count(self, obj):
 		return obj.comment_likes.count()
+
+	def get_comment_is_liked(self, obj):
+		request = self.context.get('request')
+		if request and request.user.is_authenticated:
+			return obj.comment_likes.filter(user=request.user).exists()
+		return False
 
 
 class FeedDetailSerializer(serializers.ModelSerializer):
