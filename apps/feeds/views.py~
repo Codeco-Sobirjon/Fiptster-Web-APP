@@ -86,7 +86,7 @@ class FeedListView(APIView):
 		reels_iterator = iter(reels_feeds)
 		ad_iterator = iter(advertisement_feeds)
 
-		for i in range(1, 21):
+		for i in range(1, 25):
 			if i in [5, 10, 15, 20]:
 				try:
 					result_feeds.append(next(ad_iterator))
