@@ -78,7 +78,7 @@ class FeedListView(APIView):
 
 		filtered_feeds = filterset.qs
 
-		reels_feeds = filtered_feeds.filter(type=Feed.VideoType.REELS).order_by('?')[:19]
+		reels_feeds = filtered_feeds.filter(type=Feed.VideoType.REELS).order_by('?')[:20]
 
 		advertisement_feeds = filtered_feeds.filter(type=Feed.VideoType.ADVERTISEMENT).order_by('?')[:4]
 
@@ -86,7 +86,7 @@ class FeedListView(APIView):
 		reels_iterator = iter(reels_feeds)
 		ad_iterator = iter(advertisement_feeds)
 
-		for i in range(1, 25):
+		for i in range(1, 24):
 			if i in [5, 10, 15, 20]:
 				try:
 					result_feeds.append(next(ad_iterator))
